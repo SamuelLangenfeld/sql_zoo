@@ -214,3 +214,102 @@ List all the people who have worked with 'Art Garfunkel'.
 SELECT actor.name
 FROM actor JOIN casting ON actor.id=casting.actorid
 WHERE casting.movieid IN (SELECT casting.movieid FROM casting WHERE casting.actorid=(SELECT id FROM actor WHERE name='Art Garfunkel')) AND actor.name != 'Art Garfunkel'
+
+
+Aggregate Functions
+=========
+1.
+SELECT SUM(population)
+FROM world
+
+2.
+List all the continents - just once each.
+
+SELECT DISTINCT continent
+FROM world
+
+3.
+Give the total GDP of Africa
+
+SELECT SUM(gdp)
+FROM world
+WHERE continent = 'Africa'
+
+4.
+How many countries have an area of at least 1000000
+
+SELECT COUNT(*)
+FROM world
+WHERE area >= 1000000
+
+5.
+What is the total population of ('Estonia', 'Latvia', 'Lithuania')
+
+SELECT SUM(population)
+FROM world
+WHERE name IN ('Estonia', 'Latvia', 'Lithuania')
+
+6.
+For each continent show the continent and number of countries.
+
+SELECT continent, COUNT(*)
+FROM world
+GROUP BY continent
+
+7.
+For each continent show the continent and number of countries with populations of at least 10 million.
+
+SELECT continent, COUNT(*)
+FROM world
+WHERE population >= 10000000
+GROUP BY continent
+
+8.
+List the continents that have a total population of at least 100 million.
+
+SELECT continent
+FROM world
+GROUP BY continent
+HAVING SUM(population) > 100000000
+
+SELECT WITH SELECT
+================
+
+1.
+List each country name where the population is larger than that of 'Russia'.
+
+SELECT DISTINCT name FROM world
+  WHERE population >(
+SELECT population FROM world
+      WHERE name='Russia')
+
+2.
+Show the countries in Europe with a per capita GDP greater than 'United Kingdom'.
+
+/*finds gdp per capita of UK*/
+(SELECT (gdp/population)
+FROM world
+WHERE name = 'United Kingdom')
+
+/*actual query*/
+SELECT name
+FROM world
+WHERE gdp/population > (
+  /* above subquery */
+) AND continent = 'Europe'
+
+3.
+List the name and continent of countries in the continents containing either Argentina or Australia. Order by name of the country.
+
+/*find the arg and aus cont.*/
+SELECT continent
+FROM world
+WHERE name IN ('Argentina', 'Australia')
+
+/*query*/
+SELECT name, continent
+FROM world
+WHERE continent IN (
+   /*above subquery*/
+)
+ORDER BY name
