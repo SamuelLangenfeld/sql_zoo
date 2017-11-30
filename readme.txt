@@ -123,3 +123,94 @@ SELECT mdate,
 FROM game LEFT JOIN goal ON matchid = id
 GROUP BY matchid, mdate, team1, team2
 ORDER BY mdate, team1
+
+
+More Joins
+===========
+
+3.
+List all of the Star Trek movies, include the id, title and yr (all of these movies include the words Star Trek in the title). Order results by year.
+
+SELECT id, title, yr
+FROM movie
+WHERE "title" LIKE '%Star Trek%'
+
+
+Obtain the cast list for 'Casablanca'.
+
+what is a cast list?
+Use movieid=11768, (or whatever value you got from the previous question)
+
+SELECT actor.name
+FROM actor JOIN casting ON actor.id=casting.actorid
+WHERE casting.movieid=11768
+
+7.
+Obtain the cast list for the film 'Alien'
+
+
+SELECT actor.name
+FROM actor JOIN casting ON actor.id=casting.actorid JOIN movie ON movie.id=casting.movieid
+WHERE movie.title='Alien'
+
+8.
+List the films in which 'Harrison Ford' has appeared
+
+SELECT movie.title
+FROM movie JOIN casting ON movie.id=casting.movieid
+WHERE casting.actorid=(SELECT id
+FROM actor WHERE name LIKE 'Harrison Ford')
+
+9.
+List the films where 'Harrison Ford' has appeared - but not in the starring role. [Note: the ord field of casting gives the position of the actor. If ord=1 then this actor is in the starring role]
+
+SELECT movie.title
+FROM movie JOIN casting ON movie.id=casting.movieid
+WHERE casting.actorid=(SELECT id
+FROM actor WHERE name LIKE 'Harrison Ford')
+AND casting.ord != 1
+
+
+10.
+List the films together with the leading star for all 1962 films.
+
+SELECT movie.title, actor.name
+FROM casting JOIN movie ON casting.movieid=movie.id JOIN actor ON casting.actorid=actor.id
+WHERE movie.yr=1962 AND casting.ord=1
+
+
+12.
+List the film title and the leading actor for all of the films 'Julie Andrews' played in.
+
+SELECT title, actor.name
+FROM movie JOIN casting on movie.id=casting.movieid JOIN actor ON actor.id=casting.actorid
+WHERE movie.id IN (SELECT movie.id FROM casting JOIN movie ON casting.movieid=movie.id JOIN actor ON casting.actorid = actor.id WHERE actor.name='Julie Andrews') AND ord=1
+
+13.
+Obtain a list, in alphabetical order, of actors who've had at least 30 starring roles.
+
+SELECT actor.name
+FROM actor JOIN casting ON actor.id=casting.actorid
+WHERE ord=1
+GROUP BY ord, actor.name
+HAVING COUNT(actor.id)>=30
+
+
+14.
+List the films released in the year 1978 ordered by the number of actors in the cast, then by title.
+
+SELECT movie.title, COUNT(actorid)
+FROM movie JOIN casting ON movie.id=casting.movieid
+WHERE movie.yr=1978
+GROUP BY movie.title
+ORDER BY COUNT(casting.actorid) DESC, movie.title
+
+
+
+
+15.
+List all the people who have worked with 'Art Garfunkel'.
+
+SELECT actor.name
+FROM actor JOIN casting ON actor.id=casting.actorid
+WHERE casting.movieid IN (SELECT casting.movieid FROM casting WHERE casting.actorid=(SELECT id FROM actor WHERE name='Art Garfunkel')) AND actor.name != 'Art Garfunkel'
