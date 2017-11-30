@@ -24,7 +24,7 @@ You can combine the two steps into a single query with a JOIN.
 
 SELECT *
   FROM game JOIN goal ON (id=matchid)
-The FROM clause says to merge data from the goal table with that from the game table. The ON says how to figure out which rows in game go with which rows in goal - the id from goal must match matchid from game. (If we wanted to be more clear/specific we could say 
+The FROM clause says to merge data from the goal table with that from the game table. The ON says how to figure out which rows in game go with which rows in goal - the id from goal must match matchid from game. (If we wanted to be more clear/specific we could say
 ON (game.id=goal.matchid)
 
 The code below shows the player (from the goal) and stadium name (from the game table) for every goal scored.
@@ -78,7 +78,7 @@ The example query shows all goals scored in the Germany-Greece quarterfinal.
 Instead show the name of all players who scored a goal against Germany.
 
 SELECT DISTINCT player
-  FROM game JOIN goal ON matchid = id 
+  FROM game JOIN goal ON matchid = id
     WHERE (team1='GER' OR team2='GER') AND goal.teamid != 'GER'
 
 Show teamname and the total number of goals scored.
@@ -96,3 +96,30 @@ Show the stadium and the number of goals scored in each stadium.
 SELECT stadium, COUNT(*)
 FROM game JOIN goal ON id=matchid
 GROUP BY stadium
+
+11.
+For every match involving 'POL', show the matchid, date and the number of goals scored.
+
+SELECT matchid,mdate, count(*)
+  FROM game JOIN goal ON matchid = id
+ WHERE (team1 = 'POL' OR team2 = 'POL')
+ GROUP BY matchid, mdate
+
+12.
+For every match where 'GER' scored, show matchid, match date and the number of goals scored by 'GER'
+
+SELECT matchid, mdate, count(matchid)
+FROM goal JOIN game on id = matchid
+WHERE goal.teamid = 'GER'
+GROUP BY matchid, mdate
+
+13.
+
+SELECT mdate,
+  team1,
+  SUM(CASE WHEN teamid=team1 THEN 1 ELSE 0 END) score1,
+  team2,
+  SUM(CASE WHEN teamid=team2 THEN 1 ELSE 0 END) score2
+FROM game LEFT JOIN goal ON matchid = id
+GROUP BY matchid, mdate, team1, team2
+ORDER BY mdate, team1
