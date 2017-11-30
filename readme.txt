@@ -450,8 +450,8 @@ FROM teacher
 Use CASE to show the name of each teacher followed by 'Sci' if the teacher is in dept 1 or 2, show 'Art' if the teacher's dept is 3 and 'None' otherwise.
 
 SELECT name,
-CASE WHEN (dept=1 OR dept=2) THEN 'Sci' 
-WHEN (dept=3) THEN 'Art' 
+CASE WHEN (dept=1 OR dept=2) THEN 'Sci'
+WHEN (dept=3) THEN 'Art'
 ELSE 'None' END
 FROM teacher
 
@@ -496,3 +496,43 @@ SELECT a.company, a.num, a.stop, b.stop
 FROM route a JOIN route b ON
   (a.company=b.company AND a.num=b.num)
 WHERE a.stop=53 AND b.stop=(SELECT id FROM stops WHERE name='London Road')
+
+
+6.
+The query shown is similar to the previous one, however by joining two copies of the stops table we can refer to stops by name rather than by number. Change the query so that the services between 'Craiglockhart' and 'London Road' are shown. If you are tired of these places try 'Fairmilehead' against 'Tollcross'
+
+SELECT a.company, a.num, stopa.name, stopb.name
+FROM route a JOIN route b ON
+  (a.company=b.company AND a.num=b.num)
+  JOIN stops stopa ON (a.stop=stopa.id)
+  JOIN stops stopb ON (b.stop=stopb.id)
+WHERE stopa.name='Craiglockhart' AND stopb.name = 'London Road'
+
+7.
+Give a list of all the services which connect stops 115 and 137 ('Haymarket' and 'Leith')
+
+SELECT DISTINCT a.company, a.num
+FROM route a JOIN route b ON
+  (a.company=b.company AND a.num=b.num)
+WHERE a.stop = 115 AND b.stop = 137
+
+8.
+Give a list of the services which connect the stops 'Craiglockhart' and 'Tollcross'
+
+SELECT a.company, a.num
+FROM route a JOIN route b ON
+  (a.company=b.company AND a.num=b.num)
+WHERE a.stop = (SELECT id FROM stops WHERE name = 'Craiglockhart') AND b.stop = (SELECT id FROM stops WHERE name = 'Tollcross')
+
+9.
+Give a distinct list of the stops which may be reached from 'Craiglockhart' by taking one bus, including 'Craiglockhart' itself, offered by the LRT company. Include the company and bus no. of the relevant services.
+
+SELECT stops.name, company, num
+FROM route a JOIN stops ON stops.id = a.stop
+WHERE a.company IN (SELECT company
+FROM route
+WHERE company = 'LRT' and stop = (SELECT id from stops where name = 'Craiglockhart')
+) AND a.num IN (SELECT num
+FROM route
+WHERE company = 'LRT' and stop = (SELECT id from stops where name = 'Craiglockhart')
+)
