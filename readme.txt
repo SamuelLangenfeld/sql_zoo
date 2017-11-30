@@ -313,3 +313,186 @@ WHERE continent IN (
    /*above subquery*/
 )
 ORDER BY name
+
+
+
+
+4.
+Which country has a population that is more than Canada but less than Poland? Show the name and the population.
+
+SELECT name, population
+FROM world
+WHERE population > (SELECT population FROM world WHERE name='Canada') AND population < (SELECT population FROM world WHERE name='Poland')
+
+
+5.
+Germany (population 80 million) has the largest population of the countries in Europe. Austria (population 8.5 million) has 11% of the population of Germany.
+
+Show the name and the population of each country in Europe. Show the population as a percentage of the population of Germany.
+
+SELECT name, CONCAT(ROUND(population/(SELECT population FROM world WHERE name='Germany')*100), '%')
+FROM world
+WHERE continent='Europe'
+
+
+
+6.
+Which countries have a GDP greater than every country in Europe? [Give the name only.] (Some countries may have NULL gdp values)
+
+SELECT name
+FROM world
+WHERE gdp > ALL
+(SELECT gdp FROM world WHERE continent='Europe' AND gdp IS NOT NULL)
+
+/* NULL does not evalute to 0. If you want to compare values, remove
+NULL first */
+
+
+7.
+Find the largest country (by area) in each continent, show the continent, the name and the area:
+
+SELECT continent, name, area
+FROM world x
+  WHERE area >= ALL
+    (SELECT area FROM world y
+        WHERE y.continent=x.continent AND area IS NOT NULL)
+
+
+8.
+List each continent and the name of the country that comes first alphabetically.
+
+SELECT continent, MIN(name)
+FROM world
+GROUP BY continent
+
+
+9.
+Find the continents where all countries have a population <= 25000000. Then find the names of the countries associated with these continents. Show name, continent and population.
+
+SELECT name, continent, population
+FROM world x
+WHERE 25000000 >= ALL(SELECT population FROM world y WHERE x.continent=y.continent)
+
+
+10.
+Some countries have populations more than three times that of any of their neighbours (in the same continent). Give the countries and continents.
+
+SELECT name, continent
+FROM world x
+WHERE population >= ALL(SELECT population*3 FROM world y WHERE x.continent=y.continent AND x.name != y.name)
+
+
+USING NULL
+==========
+
+
+SELECT name
+FROM teacher
+WHERE dept IS NULL
+
+
+3.
+Use a different JOIN so that all teachers are listed.
+
+SELECT teacher.name, dept.name
+FROM teacher LEFT JOIN dept
+ON (teacher.dept=dept.id)
+
+4.
+Use a different JOIN so that all departments are listed.
+
+SELECT teacher.name, dept.name
+FROM teacher RIGHT JOIN dept
+ON (teacher.dept=dept.id)
+
+
+
+5.
+Use COALESCE to print the mobile number. Use the number '07986 444 2266' if there is no number given. Show teacher name and mobile number or '07986 444 2266'
+
+SELECT name, COALESCE(mobile,'07986 444 2266')
+FROM teacher
+
+
+6.
+Use the COALESCE function and a LEFT JOIN to print the teacher name and department name. Use the string 'None' where there is no department.
+
+SELECT teacher.name, COALESCE(dept.name, 'None')
+FROM teacher LEFT JOIN dept
+ON (teacher.dept=dept.id)
+
+7.
+Use COUNT to show the number of teachers and the number of mobile phones.
+
+SELECT COUNT(name), COUNT(mobile)
+FROM teacher
+
+
+
+8.
+Use COUNT and GROUP BY dept.name to show each department and the number of staff. Use a RIGHT JOIN to ensure that the Engineering department is listed.
+
+SELECT dept.name, COUNT(teacher.name)
+FROM teacher RIGHT JOIN dept
+ON (teacher.dept=dept.id)
+GROUP BY dept.name
+
+
+9.
+Use CASE to show the name of each teacher followed by 'Sci' if the teacher is in dept 1 or 2 and 'Art' otherwise.
+
+SELECT name,
+CASE WHEN (dept=1 OR dept=2) THEN 'Sci' ELSE 'Art' END
+FROM teacher
+
+
+10.
+Use CASE to show the name of each teacher followed by 'Sci' if the teacher is in dept 1 or 2, show 'Art' if the teacher's dept is 3 and 'None' otherwise.
+
+SELECT name,
+CASE WHEN (dept=1 OR dept=2) THEN 'Sci' 
+WHEN (dept=3) THEN 'Art' 
+ELSE 'None' END
+FROM teacher
+
+
+SELF JOIN
+=========
+
+1.
+How many stops are in the database.
+
+SELECT Count(id)
+FROM stops
+
+2.
+Find the id value for the stop 'Craiglockhart'
+
+SELECT id
+FROM stops
+WHERE stops.name='Craiglockhart'
+
+3.
+Give the id and the name for the stops on the '4' 'LRT' service.
+
+SELECT stops.id, stops.name
+FROM stops JOIN route ON stops.id=route.stop
+WHERE num=4 AND company='LRT'
+
+
+4.
+The query shown gives the number of routes that visit either London Road (149) or Craiglockhart (53). Run the query and notice the two services that link these stops have a count of 2. Add a HAVING clause to restrict the output to these two routes.
+
+SELECT company, num, COUNT(*)
+FROM route WHERE stop=149 OR stop=53
+GROUP BY company, num
+HAVING COUNT(*)=2
+
+
+5.
+Execute the self join shown and observe that b.stop gives all the places you can get to from Craiglockhart, without changing routes. Change the query so that it shows the services from Craiglockhart to London Road.
+
+SELECT a.company, a.num, a.stop, b.stop
+FROM route a JOIN route b ON
+  (a.company=b.company AND a.num=b.num)
+WHERE a.stop=53 AND b.stop=(SELECT id FROM stops WHERE name='London Road')
